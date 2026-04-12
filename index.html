@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotus Paint - Tính Định Mức Sơn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <span class="logo-text">LOTUS</span>
+                <span class="logo-sub">PAINT</span>
+            </div>
+            <h1>Tính Định Mức Sơn</h1>
+            <p class="subtitle">Tính toán chính xác lượng sơn cần mua theo diện tích</p>
+        </header>
+
+        <main>
+            <section class="general-inputs card">
+                <div class="input-group">
+                    <label for="area">
+                        <i data-lucide="maximize"></i> Tổng diện tích (m²)
+                    </label>
+                    <input type="number" id="area" placeholder="Nhập số m2..." min="0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label for="layerCount">
+                        <i data-lucide="layers"></i> Số lớp sơn (Nhóm)
+                    </label>
+                    <select id="layerCount">
+                        <option value="1">1 Lớp sơn</option>
+                        <option value="2">2 Lớp sơn</option>
+                        <option value="3">3 Lớp sơn (Quy trình chuẩn)</option>
+                    </select>
+                </div>
+            </section>
+
+            <div id="layers-container">
+                <!-- Layers will be injected here -->
+            </div>
+
+            <section class="results-card card shadow-premium">
+                <div class="result-header">
+                    <div class="header-main">
+                        <i data-lucide="calculator"></i>
+                        <h2>Kết Quả Ước Tính</h2>
+                    </div>
+                    <div id="result-area-summary" class="area-summary">Định mức cho: 0 m²</div>
+                </div>
+                
+                <div id="results-breakdown" class="results-breakdown">
+                    <!-- Breakdown per layer injected here -->
+                </div>
+
+                <div class="result-divider"></div>
+
+                <div class="result-body">
+                    <div class="result-item main-result">
+                        <span class="label">TỔNG LƯỢNG SƠN CẦN THIẾT</span>
+                        <span class="value" id="total-kg">0.00</span>
+                        <span class="unit">Kg</span>
+                    </div>
+                    <div id="total-cost-container" class="result-item total-cost" style="display: none;">
+                        <span class="label">TỔNG CHI PHÍ ƯỚC TÍNH</span>
+                        <span class="value" id="total-cost">0</span>
+                        <span class="unit">VNĐ</span>
+                    </div>
+                </div>
+                <div class="result-footer">
+                    <p>* Kết quả mang tính chất tham khảo, thực tế phụ thuộc vào tay nghề thợ và bề mặt vật liệu.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
