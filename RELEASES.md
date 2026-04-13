@@ -1,7 +1,7 @@
 # Nhật Ký Phát Triển - Ứng Dụng Tính Định Mức Sơn Lotus
 
-## Phiên Bản: 1.5 - "Bản Hoàn Thiện & Tối Ưu"
-**Thời gian:** 22:18 - Ngày 12/04/2026 (Giờ địa phương)
+## Phiên Bản: 1.6 - "Bản Cập Nhật Thương Hiệu Chính Thức"
+**Thời gian:** 10:40 - Ngày 13/04/2026 (Giờ địa phương)
 
 ---
 
@@ -36,7 +36,12 @@
 *   **Deployment:** Vercel Production Environment.
 *   **URL:** [https://dinh-muc-son.vercel.app](https://dinh-muc-son.vercel.app)
 
+### 4. 💎 Nhận Diện Thương Hiệu (Branding)
+*   **Logo chính hãng:** Cập nhật Logo Lotus Paint chuẩn từ hệ thống dữ liệu công ty, tích hợp trực tiếp vào giao diện và ảnh xuất.
+*   **Thông tin liên hệ:** Chân trang kết quả hiển thị Website `www.sonlotus.vn` và hotline chuyên nghiệp.
+*   **Độ tin cậy hiển thị:** Chuyển đổi Logo sang định dạng nhúng Base64 để đảm bảo hiển thị 100% trong mọi điều kiện (offline/online) và xuất ảnh sắc nét nhất.
+
 ---
 > [!NOTE]
-> Bản lưu trữ này được tạo ra để ghi nhớ cột mốc hoàn thiện toàn bộ yêu cầu của hệ thống tính toán định mức cao cấp cho hệ sơn 2K & 1K.
+> Bản v1.6 này là cột mốc quan trọng khẳng định tính chuyên nghiệp của công cụ tính toán với đầy đủ bộ nhận diện thương hiệu Lotus Paint.
 
