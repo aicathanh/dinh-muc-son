@@ -183,6 +183,11 @@ const products = [
     "category": "KIM LOẠI 2K",
     "name": "Kim Loại 2 in 1 2K (Metal Coat 2in1 2K)",
     "prices": { "1kg": 205200, "5kg": 972000, "20kg": 3780000 }
+  },
+  {
+    "category": "PHỤ TRỢ",
+    "name": "Chất Đóng Rắn (Hardener)",
+    "prices": { "1kg": 799200, "0.5kg": 421200, "0.1kg": 91800 }
   }
 ];
 
@@ -192,6 +197,34 @@ const YIELDS = {
     'quet': 8
 };
 
+const HARDENER_RATIOS = [
+    { key: "2K71", value: 10 },
+    { key: "MX83", sub: [{ key: "Lót", value: 10 }, { key: "Primer", value: 10 }], default: 15 },
+    { key: "2K.33", value: 20 },
+    { key: "2K33", value: 20 },
+    { key: "2K.56", sub: [{ key: "Lacquer", value: 25 }], default: 20 },
+    { key: "2K56", sub: [{ key: "Lacquer", value: 25 }], default: 20 },
+    { key: "2K.42", value: 25 },
+    { key: "2K42", value: 25 },
+    { key: "2K24", value: 20 }
+];
+
+function getDefHardener(name) {
+    if (!name.includes("2K")) return 0;
+    for (const rule of HARDENER_RATIOS) {
+        if (name.includes(rule.key)) {
+            if (rule.sub) {
+                for (const subRule of rule.sub) {
+                    if (name.includes(subRule.key)) return subRule.value;
+                }
+                return rule.default;
+            }
+            return rule.value;
+        }
+    }
+    return 15; // Global default for other 2K
+}
+
 // Initialize Lucide icons
 function updateIcons() {
     lucide.createIcons();
@@ -199,7 +232,7 @@ function updateIcons() {
 
 function setupLayers() {
     const layerCountSelect = document.getElementById('layerCount');
-    layerCountSelect.addEventListener('change', renderLayers);
+    layerCountSelect.addEventListener('change', () => renderLayers(true));
     
     const areaInput = document.getElementById('area');
     areaInput.addEventListener('input', calculateTotal);
@@ -207,13 +240,37 @@ function setupLayers() {
     renderLayers();
 }
 
-function renderLayers() {
+function renderLayers(isReset = false, changedLayerIndex = -1) {
     const container = document.getElementById('layers-container');
     const count = parseInt(document.getElementById('layerCount').value);
     
+    const layerSections = Array.from(container.querySelectorAll('.layer-section'));
+    const states = isReset ? [] : layerSections.map((sec, idx) => {
+        const isThisLayerChanged = (idx + 1) === changedLayerIndex;
+        return {
+            product: sec.querySelector('.product-search').value,
+            method: sec.querySelector('.method-select').value,
+            count: sec.querySelector('.count-select').value,
+            hardener: isThisLayerChanged ? null : sec.querySelector('.hardener-input')?.value,
+            water: sec.querySelector('.water-input')?.value || "0"
+        };
+    });
+
     container.innerHTML = '';
     
     for (let i = 1; i <= count; i++) {
+        const state = states[i-1] || { 
+            product: products[0].name, 
+            method: 'quet', 
+            count: '2', 
+            hardener: null, 
+            water: "0" 
+        };
+        
+        const is2K = state.product.includes('2K');
+        const defaultH = getDefHardener(state.product);
+        const currentH = (state.hardener !== undefined && state.hardener !== null) ? state.hardener : defaultH;
+
         const section = document.createElement('section');
         section.className = 'layer-section card';
         section.innerHTML = `
@@ -221,36 +278,85 @@ function renderLayers() {
                 <i data-lucide="info"></i> Lớp thứ ${i}
             </div>
             <div class="input-group">
-                <label>Sản phẩm</label>
-                <select class="product-select" data-layer="${i}">
-                    ${products.map(p => `<option value="${p.name}">${p.name}</option>`).join('')}
-                </select>
+                <label>Sản phẩm (Gõ để tìm nhanh)</label>
+                <div class="searchable-select" data-layer="${i}">
+                    <input type="text" class="product-search" placeholder="Gõ tên sản phẩm..." value="${state.product}">
+                    <div class="select-dropdown">
+                        ${products.map(p => `<div class="option-item" data-value="${p.name}">${p.name}</div>`).join('')}
+                    </div>
+                </div>
             </div>
             <div class="layer-grid">
                 <div class="input-group">
                     <label>Phương pháp</label>
                     <select class="method-select" data-layer="${i}">
-                        <option value="phun">Phun (5m²/kg)</option>
-                        <option value="lau">Lau (12m²/kg)</option>
-                        <option value="quet" selected>Quét Cọ (8m²/kg)</option>
+                        <option value="phun" ${state.method === 'phun' ? 'selected' : ''}>Phun (5m²/kg)</option>
+                        <option value="lau" ${state.method === 'lau' ? 'selected' : ''}>Lau (12m²/kg)</option>
+                        <option value="quet" ${state.method === 'quet' ? 'selected' : ''}>Quét Cọ (8m²/kg)</option>
                     </select>
                 </div>
                 <div class="input-group">
                     <label>Số lần sơn</label>
                     <select class="count-select" data-layer="${i}">
-                        <option value="1">1 lần</option>
-                        <option value="2" selected>2 lần</option>
+                        <option value="1" ${state.count === '1' ? 'selected' : ''}>1 lần</option>
+                        <option value="2" ${state.count === '2' ? 'selected' : ''}>2 lần</option>
                     </select>
+                </div>
+            </div>
+            <div class="twok-inputs" style="display: ${is2K ? 'grid' : 'none'}">
+                <div class="input-group">
+                    <label><i data-lucide="beaker"></i> % Chất đóng rắn</label>
+                    <input type="number" class="hardener-input" value="${currentH}" min="0">
+                </div>
+                <div class="input-group">
+                    <label><i data-lucide="droplets"></i> % Nước pha</label>
+                    <input type="number" class="water-input" value="${state.water}" min="0">
                 </div>
             </div>
         `;
         container.appendChild(section);
+        
+        // Add search logic for this layer
+        const searchInput = section.querySelector('.product-search');
+        const dropdown = section.querySelector('.select-dropdown');
+        const items = dropdown.querySelectorAll('.option-item');
+
+        searchInput.addEventListener('click', () => {
+             document.querySelectorAll('.select-dropdown').forEach(d => d.classList.remove('active'));
+             dropdown.classList.add('active');
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            dropdown.classList.add('active');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        });
+
+        items.forEach(item => {
+            item.addEventListener('mousedown', (e) => {
+                const val = e.target.getAttribute('data-value');
+                searchInput.value = val;
+                dropdown.classList.remove('active');
+                renderLayers(false, i); 
+            });
+        });
+
+        searchInput.addEventListener('blur', () => {
+            setTimeout(() => dropdown.classList.remove('active'), 200);
+        });
     }
     
     updateIcons();
     
-    container.querySelectorAll('select').forEach(sel => {
+    container.querySelectorAll('.method-select, .count-select').forEach(sel => {
         sel.addEventListener('change', calculateTotal);
+    });
+
+    container.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', calculateTotal);
     });
     
     calculateTotal();
@@ -269,7 +375,7 @@ function calculateTotal() {
     document.getElementById('result-area-summary').textContent = `Định mức cho: ${area.toLocaleString('vi-VN')} m²`;
 
     layerSections.forEach((section, index) => {
-        const productName = section.querySelector('.product-select').value;
+        const productName = section.querySelector('.product-search').value;
         const method = section.querySelector('.method-select').value;
         const methodName = section.querySelector('.method-select').options[section.querySelector('.method-select').selectedIndex].text.split(' (')[0];
         const count = parseInt(section.querySelector('.count-select').value);
@@ -278,44 +384,84 @@ function calculateTotal() {
         const product = products.find(p => p.name === productName);
         const prices = product ? product.prices : { "1kg": 0, "5kg": 0, "20kg": 0 };
         
+        // 2K handling
+        const is2K = productName.includes('2K');
+        const hPer = is2K ? (parseFloat(section.querySelector('.hardener-input').value) || 0) : 0;
+        const wPer = is2K ? (parseFloat(section.querySelector('.water-input').value) || 0) : 0;
+        const mixedFactor = 1 + (hPer / 100) + (wPer / 100);
+
         const yieldValue = YIELDS[method];
-        let layerKg = 0;
+        let layerBaseKg = 0;
+        let layerHardenerKg = 0;
+
         if (yieldValue > 0) {
-            layerKg = (area / yieldValue) * count;
+            const mixedKgNeeded = (area / yieldValue) * count;
+            layerBaseKg = mixedKgNeeded / mixedFactor;
+            layerHardenerKg = layerBaseKg * (hPer / 100);
         }
-        totalKg += layerKg;
+        
+        totalKg += (layerBaseKg + layerHardenerKg);
 
         if (area > 0) {
-            const packCounts = getPackCounts(layerKg);
-            const subDetail = [];
-            let layerCost = 0;
+            const packCounts = getPackCounts(layerBaseKg);
+            const purchasedBaseKg = (packCounts.c20 * 20) + (packCounts.c5 * 5) + (packCounts.c1 * 1);
+            const purchasedHardenerKg = purchasedBaseKg * (hPer / 100);
 
-            if (packCounts.c20 > 0) {
-                const sub = packCounts.c20 * prices["20kg"];
-                layerCost += sub;
-                subDetail.push(`<div>${packCounts.c20} Thùng 20Kg x ${prices["20kg"].toLocaleString('vi-VN')}đ = ${sub.toLocaleString('vi-VN')}đ</div>`);
-            }
-            if (packCounts.c5 > 0) {
-                const sub = packCounts.c5 * prices["5kg"];
-                layerCost += sub;
-                subDetail.push(`<div>${packCounts.c5} Thùng 5Kg x ${prices["5kg"].toLocaleString('vi-VN')}đ = ${sub.toLocaleString('vi-VN')}đ</div>`);
-            }
-            if (packCounts.c1 > 0) {
-                const sub = packCounts.c1 * prices["1kg"];
-                layerCost += sub;
-                subDetail.push(`<div>${packCounts.c1} Lon 1Kg x ${prices["1kg"].toLocaleString('vi-VN')}đ = ${sub.toLocaleString('vi-VN')}đ</div>`);
+            let layerCost = (packCounts.c20 * (prices["20kg"] || 0)) + (packCounts.c5 * (prices["5kg"] || 0)) + (packCounts.c1 * (prices["1kg"] || 0));
+            
+            const subDetail = [];
+            if (packCounts.c20 > 0) subDetail.push(`<div>${packCounts.c20} Thùng 20Kg x ${(prices["20kg"] || 0).toLocaleString('vi-VN')}đ = ${(packCounts.c20 * (prices["20kg"] || 0)).toLocaleString('vi-VN')}đ</div>`);
+            if (packCounts.c5 > 0) subDetail.push(`<div>${packCounts.c5} Thùng 5Kg x ${(prices["5kg"] || 0).toLocaleString('vi-VN')}đ = ${(packCounts.c5 * (prices["5kg"] || 0)).toLocaleString('vi-VN')}đ</div>`);
+            if (packCounts.c1 > 0) subDetail.push(`<div>${packCounts.c1} Lon 1Kg x ${(prices["1kg"] || 0).toLocaleString('vi-VN')}đ = ${(packCounts.c1 * (prices["1kg"] || 0)).toLocaleString('vi-VN')}đ</div>`);
+
+            // Hardener cost
+            if (purchasedHardenerKg > 0) {
+                const hardenerProd = products.find(p => p.name.includes("Chất Đóng Rắn"));
+                const hPrices = hardenerProd ? hardenerProd.prices : { "1kg": 799200, "0.5kg": 421200, "0.1kg": 91800 };
+                
+                // User logic: Choose the unit U that "fits" best (closest weight ratio to 1)
+                const hUnits = [
+                    { size: 1.0, price: hPrices["1kg"], label: "Lon 1Kg" },
+                    { size: 0.5, price: hPrices["0.5kg"], label: "Lon 0.5Kg" },
+                    { size: 0.1, price: hPrices["0.1kg"], label: "Lon 0.1Kg" }
+                ];
+                
+                // Filter out units with 0 price (if any)
+                const validUnits = hUnits.filter(u => u.price > 0);
+                
+                // Find unit with ratio closest to 1: min | (kg/size) - 1 |
+                let bestUnit = validUnits[0];
+                let minDiff = Math.abs((purchasedHardenerKg / bestUnit.size) - 1);
+                
+                validUnits.forEach(u => {
+                    const diff = Math.abs((purchasedHardenerKg / u.size) - 1);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        bestUnit = u;
+                    }
+                });
+
+                const unitRatio = purchasedHardenerKg / bestUnit.size;
+                const hCost = unitRatio * bestUnit.price;
+                layerCost += hCost;
+                
+                subDetail.push(`<div>+ Đóng rắn: ${unitRatio.toFixed(1)} ${bestUnit.label} x ${bestUnit.price.toLocaleString('vi-VN')}đ = ${hCost.toLocaleString('vi-VN')}đ</div>`);
             }
 
             totalCost += layerCost;
 
             const breakdownDiv = document.createElement('div');
             breakdownDiv.className = 'breakdown-layer';
+            const mixedNeeded = (area / yieldValue) * count;
             breakdownDiv.innerHTML = `
                 <div class="layer-info-row">
-                    <span class="layer-name">Lớp thứ ${index + 1} (${layerKg.toFixed(2)} Kg)</span>
+                    <span class="layer-name">Lớp thứ ${index + 1} (Cần thi công: ${mixedNeeded.toFixed(2)} Kg)</span>
                     <span class="layer-price-total">Thành tiền: ${layerCost.toLocaleString('vi-VN')}đ</span>
                 </div>
-                <span class="layer-product-detail">${productName} - sơn ${count} lớp - phương pháp ${methodName}</span>
+                <div class="layer-product-detail">${productName} ${is2K ? `(+${hPer}% ĐR, +${wPer}% Nước)` : ''} - sơn ${count} lớp - phương pháp ${methodName}</div>
+                <div class="weight-breakdown">
+                    Sơn gốc (mua): ${purchasedBaseKg.toFixed(2)}Kg | Đóng rắn (pha): ${purchasedHardenerKg.toFixed(2)}Kg ${is2K ? `| Nước (pha): ${(purchasedBaseKg * wPer / 100).toFixed(2)}Kg` : ''}
+                </div>
                 <div class="price-calc-details">
                     ${subDetail.join('')}
                 </div>
@@ -324,17 +470,74 @@ function calculateTotal() {
         }
     });
     
-    document.getElementById('total-kg').textContent = totalKg.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-
     if (totalCost > 0) {
         document.getElementById('total-cost-container').style.display = 'block';
         document.getElementById('total-cost').textContent = totalCost.toLocaleString('vi-VN');
+        
+        if (area > 0) {
+            document.getElementById('m2-cost-container').style.display = 'block';
+            const m2Price = Math.round(totalCost / area);
+            document.getElementById('m2-cost').textContent = m2Price.toLocaleString('vi-VN');
+            document.getElementById('action-container').style.display = 'block';
+        } else {
+            document.getElementById('m2-cost-container').style.display = 'none';
+            document.getElementById('action-container').style.display = 'none';
+        }
     } else {
         document.getElementById('total-cost-container').style.display = 'none';
+        document.getElementById('m2-cost-container').style.display = 'none';
+        document.getElementById('action-container').style.display = 'none';
     }
+}
+
+function exportImage() {
+    const target = document.querySelector('.results-card');
+    const area = document.getElementById('area').value;
+    
+    // Smooth scroll to top
+    target.scrollIntoView({ behavior: 'smooth' });
+    
+    // Temporary styling for better export (especially on mobile)
+    const originalWidth = target.style.width;
+    const isMobile = window.innerWidth <= 480;
+    
+    if (isMobile) {
+        target.style.width = '550px'; // Force a wider look on mobile
+    }
+
+    // Force a specific width for the capture to ensure consistency
+    const captureWidth = 600;
+
+    setTimeout(() => {
+        html2canvas(target, {
+            backgroundColor: "#064e3b",
+            scale: 2,
+            logging: true, // Enable for debugging if needed
+            useCORS: true,
+            allowTaint: true,
+            onclone: (clonedDoc) => {
+                const clonedTarget = clonedDoc.querySelector('.results-card');
+                clonedTarget.style.width = `${captureWidth}px`;
+                clonedTarget.style.borderRadius = '0px';
+                clonedTarget.style.boxShadow = 'none';
+                
+                // Ensure the logo is visible in the clone
+                const logo = clonedTarget.querySelector('.logo-image-small');
+                if (logo) {
+                    logo.style.display = 'block';
+                    logo.style.visibility = 'visible';
+                }
+            }
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Bao-Gia-Lotus-${area}m2.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            // Restore original style
+            target.style.width = originalWidth;
+        });
+    }, 800); // Slightly longer delay to ensure rendering is ready
 }
 
 function getPackCounts(kg) {
@@ -352,6 +555,22 @@ function getPackCounts(kg) {
     return counts;
 }
 
+function getHardenerPackCounts(kg) {
+    let remaining = Math.round(kg * 10) / 10; // Round to 0.1 decimal
+    const counts = { c1: 0, c05: 0, c01: 0 };
+    
+    counts.c1 = Math.floor(remaining / 1);
+    remaining = Math.round((remaining % 1) * 10) / 10;
+    
+    counts.c05 = Math.floor(remaining / 0.5);
+    remaining = Math.round((remaining % 0.5) * 10) / 10;
+    
+    counts.c01 = Math.ceil(remaining / 0.1);
+    
+    return counts;
+}
+
 // Start
+console.log("App Updated v1.2 - 08:52 AM");
 setupLayers();
 updateIcons();
