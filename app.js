@@ -156,27 +156,27 @@ const products = [
   },
   {
     "category": "SƠN GIẢ GỖ XI MĂNG",
-    "name": "Lót Giả Gỗ (Wood Primer Paint)",
+    "name": "Lót Giả Gỗ Tấm Xi Măng (Fiber Cement Wood Primer)",
     "prices": { "1kg": 198000, "3.5kg": 682000 }
   },
   {
     "category": "SƠN GIẢ GỖ XI MĂNG",
-    "name": "Màu Giả Gỗ Vách/Trần (Plank Paint)",
+    "name": "Màu Giả Gỗ Vách/Trần Tấm Xi Măng (Fiber Cement Plank Paint)",
     "prices": { "1kg": 297000, "3.5kg": 1028500 }
   },
   {
     "category": "SƠN GIẢ GỖ XI MĂNG",
-    "name": "Màu Giả Gỗ Sàn (Decking Paint)",
+    "name": "Màu Giả Gỗ Sàn Tấm Xi Măng (Fiber Cement Decking Paint)",
     "prices": { "1kg": 385000, "3.5kg": 1355200 }
   },
   {
     "category": "SƠN GIẢ GỖ XI MĂNG",
-    "name": "Phủ Bóng Vách/Trần (Shield)",
+    "name": "Phủ Bóng Vách/Trần Tấm Xi Măng (Fiber Cement Shield)",
     "prices": { "1kg": 192500, "3.5kg": 662200 }
   },
   {
     "category": "SƠN GIẢ GỖ XI MĂNG",
-    "name": "Phủ Bóng Sàn (Hard Shield)",
+    "name": "Phủ Bóng Sàn Tấm Xi Măng (Fiber Cement Hard Shield)",
     "prices": { "1kg": 286000, "3.5kg": 990000 }
   },
   {
