@@ -155,6 +155,31 @@ const products = [
     "prices": { "1kg": 297000, "5kg": 1366200, "20kg": 5303880 }
   },
   {
+    "category": "SƠN GIẢ GỖ XI MĂNG",
+    "name": "Lót Giả Gỗ (Wood Primer Paint)",
+    "prices": { "1kg": 198000, "3.5kg": 682000 }
+  },
+  {
+    "category": "SƠN GIẢ GỖ XI MĂNG",
+    "name": "Màu Giả Gỗ Vách/Trần (Plank Paint)",
+    "prices": { "1kg": 297000, "3.5kg": 1028500 }
+  },
+  {
+    "category": "SƠN GIẢ GỖ XI MĂNG",
+    "name": "Màu Giả Gỗ Sàn (Decking Paint)",
+    "prices": { "1kg": 385000, "3.5kg": 1355200 }
+  },
+  {
+    "category": "SƠN GIẢ GỖ XI MĂNG",
+    "name": "Phủ Bóng Vách/Trần (Shield)",
+    "prices": { "1kg": 192500, "3.5kg": 662200 }
+  },
+  {
+    "category": "SƠN GIẢ GỖ XI MĂNG",
+    "name": "Phủ Bóng Sàn (Hard Shield)",
+    "prices": { "1kg": 286000, "3.5kg": 990000 }
+  },
+  {
     "category": "KIM LOẠI (1K)",
     "name": "Lót Kim Loại Chống Gỉ (Metal Primer) (LMCP)",
     "prices": { "1kg": 217080, "5kg": 986040, "20kg": 3723840 }
@@ -403,15 +428,16 @@ function calculateTotal() {
         totalKg += (layerBaseKg + layerHardenerKg);
 
         if (area > 0) {
-            const packCounts = getPackCounts(layerBaseKg);
-            const purchasedBaseKg = (packCounts.c20 * 20) + (packCounts.c5 * 5) + (packCounts.c1 * 1);
+            const packCounts = getPackCounts(layerBaseKg, prices);
+            const purchasedBaseKg = (packCounts.c20 * 20) + (packCounts.c5 * 5) + (packCounts.c35 * 3.5) + (packCounts.c1 * 1);
             const purchasedHardenerKg = purchasedBaseKg * (hPer / 100);
 
-            let layerCost = (packCounts.c20 * (prices["20kg"] || 0)) + (packCounts.c5 * (prices["5kg"] || 0)) + (packCounts.c1 * (prices["1kg"] || 0));
+            let layerCost = (packCounts.c20 * (prices["20kg"] || 0)) + (packCounts.c5 * (prices["5kg"] || 0)) + (packCounts.c35 * (prices["3.5kg"] || 0)) + (packCounts.c1 * (prices["1kg"] || 0));
             
             const subDetail = [];
             if (packCounts.c20 > 0) subDetail.push(`<div>${packCounts.c20} Thùng 20Kg x ${(prices["20kg"] || 0).toLocaleString('vi-VN')}đ = ${(packCounts.c20 * (prices["20kg"] || 0)).toLocaleString('vi-VN')}đ</div>`);
             if (packCounts.c5 > 0) subDetail.push(`<div>${packCounts.c5} Thùng 5Kg x ${(prices["5kg"] || 0).toLocaleString('vi-VN')}đ = ${(packCounts.c5 * (prices["5kg"] || 0)).toLocaleString('vi-VN')}đ</div>`);
+            if (packCounts.c35 > 0) subDetail.push(`<div>${packCounts.c35} Thùng 3.5Kg x ${(prices["3.5kg"] || 0).toLocaleString('vi-VN')}đ = ${(packCounts.c35 * (prices["3.5kg"] || 0)).toLocaleString('vi-VN')}đ</div>`);
             if (packCounts.c1 > 0) subDetail.push(`<div>${packCounts.c1} Lon 1Kg x ${(prices["1kg"] || 0).toLocaleString('vi-VN')}đ = ${(packCounts.c1 * (prices["1kg"] || 0)).toLocaleString('vi-VN')}đ</div>`);
 
             // Hardener cost
@@ -540,15 +566,22 @@ function exportImage() {
     }, 800); // Slightly longer delay to ensure rendering is ready
 }
 
-function getPackCounts(kg) {
+function getPackCounts(kg, prices = {}) {
     let remaining = kg;
-    const counts = { c20: 0, c5: 0, c1: 0 };
+    const counts = { c20: 0, c5: 0, c35: 0, c1: 0 };
     
-    counts.c20 = Math.floor(remaining / 20);
-    remaining %= 20;
+    if (prices["20kg"]) {
+        counts.c20 = Math.floor(remaining / 20);
+        remaining %= 20;
+    }
     
-    counts.c5 = Math.floor(remaining / 5);
-    remaining %= 5;
+    if (prices["5kg"]) {
+        counts.c5 = Math.floor(remaining / 5);
+        remaining %= 5;
+    } else if (prices["3.5kg"]) {
+        counts.c35 = Math.floor(remaining / 3.5);
+        remaining %= 3.5;
+    }
     
     counts.c1 = Math.ceil(remaining);
     
